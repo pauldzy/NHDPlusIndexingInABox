@@ -1,0 +1,33 @@
+FROM postgres:11.7
+
+LABEL maintainer="Paul Dziemiela <Paul.Dziemiela@erg.com>"
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update                                       &&\
+    apt-get install -y --no-install-recommends             \
+       libaio1                                             \
+       build-essential                                     \
+       wget                                                \
+       dos2unix                                            \
+       postgresql-11-postgis-2.5                           \
+       postgresql-11-postgis-2.5-scripts                   \
+       postgresql-11-pgrouting*                            \
+       postgresql-server-dev-11                            \
+       openssh-client                                      \
+       sshpass                                             \
+       parallel                                            \
+       unzip                                               \
+       vim                                               &&\ 
+    rm -rf /var/lib/apt/lists/*
+    
+COPY ./init-pg.sh /docker-entrypoint-initdb.d/init.sh
+RUN dos2unix --quiet /docker-entrypoint-initdb.d/init.sh &&\
+    chmod 755 /docker-entrypoint-initdb.d/init.sh        &&\
+    mkdir -p /home/postgres/.ssh                         &&\
+    chown -R postgres:postgres /home/postgres            &&\
+    mkdir -p /loading_dock                               &&\
+    mkdir -p /tblspdata                                  &&\
+    chown -R postgres:postgres /loading_dock             &&\
+    chown -R postgres:postgres /tblspdata                &&\
+    chmod g+s /loading_dock

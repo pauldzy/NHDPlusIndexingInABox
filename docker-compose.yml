@@ -1,0 +1,35 @@
+version: "3.7"
+x-postgresql_port: &postgresql_port 5432
+x-loading_dock   : &loading_dock    ./loading_dock
+x-master_password: &master_password nhdplus
+services:
+    dz_pg:
+        build:
+            context: .
+            dockerfile: Dockerfile.pg
+            shm_size: '2gb'
+        hostname: dz_pg
+        environment:
+            POSTGRES_PASSWORD: *master_password
+        ports:
+            - target: 5432
+              published: *postgresql_port
+        networks:
+            - dz
+        volumes:
+            - type: bind
+              source: *loading_dock
+              target: /loading_dock
+            - type: volume
+              source: pgdata
+              target: /var/lib/postgresql/data
+            - type: volume
+              source: tblspdata
+              target: /tblspdata
+networks:
+    dz:
+        driver: bridge
+volumes:
+    tblspdata:
+    pgdata:
+
